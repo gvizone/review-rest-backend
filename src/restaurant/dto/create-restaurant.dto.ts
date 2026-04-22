@@ -1,25 +1,25 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
-  IsObject,
   IsOptional,
   IsString,
   IsUrl,
   ValidateNested,
 } from 'class-validator';
 import { AddressDto } from '../../common/dto/address.dto';
+import { CategoryDto } from 'src/common/dto/category.dto';
 
 export class CreateRestaurantDto {
   @IsString()
   name: string;
 
   @ValidateNested()
-  @IsObject()
   @Type(() => AddressDto)
   address: AddressDto;
 
-  @IsObject()
-  categories: Record<string, string>;
+  @ValidateNested()
+  @Type(() => CategoryDto)
+  categories: CategoryDto[];
 
   @IsUrl()
   @IsOptional()
@@ -27,5 +27,6 @@ export class CreateRestaurantDto {
 
   @IsArray()
   @IsString({ each: true })
-  images: string[];
+  @IsOptional()
+  images?: string[];
 }

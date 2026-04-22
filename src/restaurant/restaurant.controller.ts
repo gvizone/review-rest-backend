@@ -11,9 +11,19 @@ export class RestaurantController {
     return this.restaurantService.findAll();
   }
 
+  @Get('categories')
+  findCategories() {
+    return this.restaurantService.findCategories();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.restaurantService.findById(id);
+  }
+
+  @Get('category/:categoryName')
+  findByCategory(@Param('categoryName') categoryName: string) {
+    return this.restaurantService.findByCategory(categoryName);
   }
 
   @Post()

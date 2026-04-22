@@ -3,6 +3,7 @@ import { Restaurant } from './domain/restaurant.entity';
 import type { RestaurantRepository } from './domain/restaurant.repository';
 import { RESTAURANT_REPOSITORY } from './domain/restaurant.repository.token';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { CategoryDto } from 'src/common/dto/category.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -21,6 +22,20 @@ export class RestaurantService {
       throw new NotFoundException(`Restaurant ${id} not found`);
     }
     return restaurant;
+  }
+
+  async findByCategory(categoryName: string): Promise<Restaurant[]> {
+    const restaurants =
+      await this.restaurantRepository.findByCategory(categoryName);
+    if (!restaurants) {
+      throw new NotFoundException(`Category ${categoryName} not found`);
+    }
+    return restaurants;
+  }
+
+  async findCategories(): Promise<CategoryDto[]> {
+    const categories = await this.restaurantRepository.findCategories();
+    return categories;
   }
 
   create(dto: CreateRestaurantDto): Promise<Restaurant> {
