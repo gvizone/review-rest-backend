@@ -1,4 +1,4 @@
-import { CategoryDto } from 'src/common/dto/category.dto';
+import { CategoryDto } from '../../common/dto/category.dto';
 import { Restaurant } from './restaurant.entity';
 
 export interface RestaurantRepository {

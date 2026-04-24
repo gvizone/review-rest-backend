@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { AddressDto } from '../../common/dto/address.dto';
-import { CategoryDto } from 'src/common/dto/category.dto';
+import { CategoryDto } from '../../common/dto/category.dto';
 
 export class CreateRestaurantDto {
   @IsString()

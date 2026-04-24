@@ -1,8 +1,17 @@
-import { Address } from '../../common/types/address';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { AddressEmbeddable } from '../../common/domain/address.embeddable';
 
-export interface User {
+@Entity('users')
+export class User {
+  @PrimaryColumn('uuid')
   id: string;
+
+  @Column()
   name: string;
+
+  @Column()
   email: string;
-  address: Address;
+
+  @Column(() => AddressEmbeddable, { prefix: 'address_' })
+  address: AddressEmbeddable;
 }

@@ -1,15 +1,14 @@
-import 'dotenv/config';
+import 'reflect-metadata';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { env } from './config/env';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',')
-      .map((o) => o.trim())
-      .filter(Boolean) ?? ['http://localhost:4200', 'http://127.0.0.1:4200'],
+    origin: env.cors.origins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
@@ -20,6 +19,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(env.port);
 }
 void bootstrap();
