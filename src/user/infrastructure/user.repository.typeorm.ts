@@ -20,6 +20,10 @@ export class UserTypeOrmRepository implements UserRepository {
     return this.repo.findOne({ where: { id } });
   }
 
+  findByEmail(email: string): Promise<User | null> {
+    return this.repo.findOne({ where: { email } });
+  }
+
   create(data: Omit<User, 'id'>): Promise<User> {
     const entity = this.repo.create({
       id: randomUUID(),
