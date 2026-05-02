@@ -1,17 +1,20 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewService } from './review.service';
+import { Public } from 'src/auth/public.decorator';
 
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Get()
+  @Public()
   findAll() {
     return this.reviewService.findAll();
   }
 
   @Get(':id')
+  @Public()
   findOne(@Param('id') id: string) {
     return this.reviewService.findById(id);
   }
