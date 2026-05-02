@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { User } from './domain/user.entity';
 import type { UserRepository } from './domain/user.repository';
 import { USER_REPOSITORY } from './domain/user.repository.token';
@@ -25,19 +30,24 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.userRepository.findByEmail(email);
-    //if (!user) {
-    //  throw new NotFoundException(`User ${email} not found`);
-    //}
-    return user;
+    return this.userRepository.findByEmail(UserService.normalizeEmail(email));
   }
 
-  create(dto: CreateUserDto): Promise<User> {
+  async create(dto: CreateUserDto): Promise<User> {
+    const email = UserService.normalizeEmail(dto.email);
+    const existing = await this.userRepository.findByEmail(email);
+    if (existing) {
+      throw new ConflictException('A user with this email already exists');
+    }
     return this.userRepository.create({
-      name: dto.name,
-      email: dto.email,
+      name: dto.name.trim(),
+      email,
       address: dto.address,
     });
+  }
+
+  private static normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
   }
 
   deleteAll(): Promise<DeleteResult> {
