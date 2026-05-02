@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { Restaurant } from '../../restaurant/domain/restaurant.entity';
 import { User } from '../../user/domain/user.entity';
 import { Review } from '../domain/review.entity';
@@ -24,6 +24,10 @@ export class ReviewTypeOrmRepository implements ReviewRepository {
 
   findById(id: string): Promise<Review | null> {
     return this.reviewRepo.findOne({ where: { id } });
+  }
+
+  deleteAll(): Promise<DeleteResult> {
+    return this.reviewRepo.deleteAll();
   }
 
   async create(data: Omit<Review, 'id'>): Promise<Review> {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { CategoryDto } from '../../common/dto/category.dto';
 import { Restaurant } from '../domain/restaurant.entity';
 import { RestaurantRepository } from '../domain/restaurant.repository';
@@ -51,5 +51,9 @@ export class RestaurantTypeOrmRepository implements RestaurantRepository {
       ...data,
     });
     return this.repo.save(entity);
+  }
+
+  deleteAll(): Promise<DeleteResult> {
+    return this.repo.deleteAll();
   }
 }

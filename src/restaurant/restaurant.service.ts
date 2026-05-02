@@ -4,6 +4,7 @@ import type { RestaurantRepository } from './domain/restaurant.repository';
 import { RESTAURANT_REPOSITORY } from './domain/restaurant.repository.token';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { CategoryDto } from 'src/common/dto/category.dto';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class RestaurantService {
@@ -36,6 +37,10 @@ export class RestaurantService {
   async findCategories(): Promise<CategoryDto[]> {
     const categories = await this.restaurantRepository.findCategories();
     return categories;
+  }
+
+  deleteAll(): Promise<DeleteResult> {
+    return this.restaurantRepository.deleteAll();
   }
 
   create(dto: CreateRestaurantDto): Promise<Restaurant> {

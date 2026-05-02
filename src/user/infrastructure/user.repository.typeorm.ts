@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { User } from '../domain/user.entity';
 import { UserRepository } from '../domain/user.repository';
 
@@ -30,5 +30,9 @@ export class UserTypeOrmRepository implements UserRepository {
       ...data,
     });
     return this.repo.save(entity);
+  }
+
+  deleteAll(): Promise<DeleteResult> {
+    return this.repo.deleteAll();
   }
 }

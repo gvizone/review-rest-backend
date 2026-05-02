@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { RestaurantService } from './restaurant.service';
 import { Public } from 'src/auth/public.decorator';
@@ -34,5 +34,10 @@ export class RestaurantController {
   @Post()
   create(@Body() dto: CreateRestaurantDto) {
     return this.restaurantService.create(dto);
+  }
+
+  @Delete()
+  deleteAll() {
+    return this.restaurantService.deleteAll();
   }
 }

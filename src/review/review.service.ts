@@ -4,6 +4,7 @@ import { Review } from './domain/review.entity';
 import type { ReviewRepository } from './domain/review.repository';
 import { REVIEW_REPOSITORY } from './domain/review.repository.token';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class ReviewService {
@@ -22,6 +23,10 @@ export class ReviewService {
       throw new NotFoundException(`Review ${id} not found`);
     }
     return review;
+  }
+
+  deleteAll(): Promise<DeleteResult> {
+    return this.reviewRepository.deleteAll();
   }
 
   create(dto: CreateReviewDto): Promise<Review> {

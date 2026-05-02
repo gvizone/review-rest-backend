@@ -3,6 +3,7 @@ import { User } from './domain/user.entity';
 import type { UserRepository } from './domain/user.repository';
 import { USER_REPOSITORY } from './domain/user.repository.token';
 import { CreateUserDto } from './dto/create-user.dto';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -37,5 +38,9 @@ export class UserService {
       email: dto.email,
       address: dto.address,
     });
+  }
+
+  deleteAll(): Promise<DeleteResult> {
+    return this.userRepository.deleteAll();
   }
 }
