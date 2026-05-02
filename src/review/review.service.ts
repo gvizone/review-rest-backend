@@ -1,5 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { RestaurantService } from '../restaurant/restaurant.service';
+import { UserService } from '../user/user.service';
 import { Review } from './domain/review.entity';
 import type { ReviewRepository } from './domain/review.repository';
 import { REVIEW_REPOSITORY } from './domain/review.repository.token';
@@ -11,6 +12,8 @@ export class ReviewService {
   constructor(
     @Inject(REVIEW_REPOSITORY)
     private readonly reviewRepository: ReviewRepository,
+    private readonly userService: UserService,
+    private readonly restaurantService: RestaurantService,
   ) {}
 
   findAll(): Promise<Review[]> {
@@ -29,22 +32,12 @@ export class ReviewService {
     return this.reviewRepository.deleteAll();
   }
 
-  create(dto: CreateReviewDto): Promise<Review> {
+  async create(dto: CreateReviewDto): Promise<Review> {
+    const user = await this.userService.findById(dto.userId);
+    const restaurant = await this.restaurantService.findById(dto.restaurantId);
     return this.reviewRepository.create({
-      user: {
-        id: randomUUID(),
-        name: dto.user.name,
-        email: dto.user.email,
-        address: dto.user.address,
-      },
-      restaurant: {
-        id: randomUUID(),
-        name: dto.restaurant.name,
-        address: dto.restaurant.address,
-        categories: dto.restaurant.categories,
-        instagram: dto.restaurant.instagram,
-        images: dto.restaurant.images,
-      },
+      user,
+      restaurant,
       note: dto.note,
       commentary: dto.commentary,
       images: dto.images,

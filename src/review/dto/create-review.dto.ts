@@ -1,17 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { CreateRestaurantDto } from '../../restaurant/dto/create-restaurant.dto';
-import { CreateUserDto } from '../../user/dto/create-user.dto';
+import { IsArray, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { ReviewNoteDto } from './review-note.dto';
 
 export class CreateReviewDto {
-  @ValidateNested()
-  @Type(() => CreateUserDto)
-  user: CreateUserDto;
+  @IsUUID('4')
+  userId: string;
 
-  @ValidateNested()
-  @Type(() => CreateRestaurantDto)
-  restaurant: CreateRestaurantDto;
+  @IsUUID('4')
+  restaurantId: string;
 
   @ValidateNested()
   @Type(() => ReviewNoteDto)
