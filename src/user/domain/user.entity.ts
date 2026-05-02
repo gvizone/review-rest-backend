@@ -14,4 +14,8 @@ export class User {
 
   @Column(() => AddressEmbeddable, { prefix: 'address_' })
   address: AddressEmbeddable;
+
+  /** Data URL or raw base64 profile image from client upload. */
+  @Column({ type: 'longtext', nullable: true })
+  image?: string;
 }

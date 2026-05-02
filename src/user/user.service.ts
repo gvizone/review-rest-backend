@@ -43,6 +43,7 @@ export class UserService {
       name: dto.name.trim(),
       email,
       address: dto.address,
+      ...(dto.image !== undefined && dto.image !== '' ? { image: dto.image } : {}),
     });
   }
 
