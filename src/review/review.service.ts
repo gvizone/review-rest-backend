@@ -28,6 +28,10 @@ export class ReviewService {
     return review;
   }
 
+  findByUserId(userId: string): Promise<Review[]> {
+    return this.reviewRepository.findByUserId(userId);
+  }
+
   deleteAll(): Promise<DeleteResult> {
     return this.reviewRepository.deleteAll();
   }

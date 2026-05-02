@@ -20,6 +20,13 @@ export class ReviewTypeOrmRepository implements ReviewRepository {
     return this.reviewRepo.findOne({ where: { id } });
   }
 
+  findByUserId(userId: string): Promise<Review[]> {
+    return this.reviewRepo.find({
+      where: { user: { id: userId } },
+      order: { id: 'DESC' },
+    });
+  }
+
   deleteAll(): Promise<DeleteResult> {
     return this.reviewRepo.deleteAll();
   }

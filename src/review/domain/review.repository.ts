@@ -4,6 +4,7 @@ import { DeleteResult } from 'typeorm';
 export interface ReviewRepository {
   findAll(): Promise<Review[]>;
   findById(id: string): Promise<Review | null>;
+  findByUserId(userId: string): Promise<Review[]>;
   create(data: Omit<Review, 'id'>): Promise<Review>;
   deleteAll(): Promise<DeleteResult>;
 }

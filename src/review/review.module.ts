@@ -22,5 +22,6 @@ import { ReviewService } from './review.service';
       useClass: ReviewTypeOrmRepository,
     },
   ],
+  exports: [ReviewService],
 })
 export class ReviewModule {}

@@ -51,6 +51,14 @@ export class UserService {
     return email.trim().toLowerCase();
   }
 
+  async updateImage(id: string, image: string | null): Promise<User> {
+    const updated = await this.userRepository.updateImage(id, image);
+    if (!updated) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
+    return updated;
+  }
+
   deleteAll(): Promise<DeleteResult> {
     return this.userRepository.deleteAll();
   }

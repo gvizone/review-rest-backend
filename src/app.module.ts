@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
 import { env } from './config/env';
 import { RestaurantModule } from './restaurant/restaurant.module';
+import { ProfileModule } from './profile/profile.module';
 import { ReviewModule } from './review/review.module';
 import { UserModule } from './user/user.module';
 
@@ -13,6 +14,7 @@ import { UserModule } from './user/user.module';
     RestaurantModule,
     UserModule,
     ReviewModule,
+    ProfileModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: env.db.host,

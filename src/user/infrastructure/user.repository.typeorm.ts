@@ -32,6 +32,23 @@ export class UserTypeOrmRepository implements UserRepository {
     return this.repo.save(entity);
   }
 
+  async updateImage(id: string, image: string | null): Promise<User | null> {
+    const existing = await this.findById(id);
+    if (!existing) return null;
+    if (image === null) {
+      await this.repo
+        .createQueryBuilder()
+        .update(User)
+        .set({ image: null } as any)
+        .where('id = :id', { id })
+        .execute();
+    } else {
+      existing.image = image;
+      await this.repo.save(existing);
+    }
+    return this.findById(id);
+  }
+
   deleteAll(): Promise<DeleteResult> {
     return this.repo.deleteAll();
   }
