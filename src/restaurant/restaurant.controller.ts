@@ -5,13 +5,15 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { BulkImportRestaurantsDto } from './dto/bulk-import-restaurants.dto';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { RestaurantService } from './restaurant.service';
-import { Public } from 'src/auth/public.decorator';
+import { Public } from 'src/auth';
 
 @Controller('restaurants')
 export class RestaurantController {
@@ -57,6 +59,11 @@ export class RestaurantController {
   @Post()
   create(@Body() dto: CreateRestaurantDto) {
     return this.restaurantService.create(dto);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateRestaurantDto) {
+    return this.restaurantService.update(id, dto);
   }
 
   /** Import many restaurants from a JSON dump (`items` may include optional `id` per row). */

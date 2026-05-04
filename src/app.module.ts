@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth';
 import { AppService } from './app.service';
 import { env } from './config/env';
 import { RestaurantModule } from './restaurant/restaurant.module';

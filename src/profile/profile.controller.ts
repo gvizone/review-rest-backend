@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import type { DecodedIdToken } from 'firebase-admin/auth';
-import { CurrentFirebaseUser } from '../auth/current-firebase-user.decorator';
+import { CurrentFirebaseUser } from '../auth';
 import { UpdateProfileImageDto } from './dto/update-profile-image.dto';
 import { ProfileService } from './profile.service';
 

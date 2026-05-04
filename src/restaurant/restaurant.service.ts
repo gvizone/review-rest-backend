@@ -4,6 +4,7 @@ import type { RestaurantRepository } from './domain/restaurant.repository';
 import { RESTAURANT_REPOSITORY } from './domain/restaurant.repository.token';
 import { BulkImportRestaurantsDto } from './dto/bulk-import-restaurants.dto';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CategoryDto } from 'src/common/dto/category.dto';
 import { DeleteResult } from 'typeorm';
 
@@ -59,6 +60,7 @@ export class RestaurantService {
       categories: dto.categories,
       instagram: dto.instagram,
       images: dto.images,
+      about: dto.about,
     });
   }
 
@@ -73,9 +75,31 @@ export class RestaurantService {
         categories: rest.categories,
         instagram: rest.instagram,
         images: rest.images,
+        about: rest.about,
       });
       created.push(row);
     }
     return created;
+  }
+
+  async update(id: string, dto: UpdateRestaurantDto): Promise<Restaurant> {
+    const patch: Partial<Omit<Restaurant, 'id'>> & {
+      address?: Partial<Restaurant['address']>;
+    } = {};
+    if (dto.name !== undefined) patch.name = dto.name;
+    if (dto.address !== undefined) {
+      (patch as { address?: Partial<Restaurant['address']> }).address = dto.address;
+    }
+    if (dto.categories !== undefined) patch.categories = dto.categories;
+    if (dto.instagram !== undefined) patch.instagram = dto.instagram;
+    if (dto.images !== undefined) patch.images = dto.images;
+    if (dto.about !== undefined) {
+      patch.about = dto.about.trim() === '' ? null : dto.about;
+    }
+    const updated = await this.restaurantRepository.update(id, patch);
+    if (!updated) {
+      throw new NotFoundException(`Restaurant ${id} not found`);
+    }
+    return updated;
   }
 }

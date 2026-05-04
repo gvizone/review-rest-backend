@@ -39,6 +39,7 @@ export class RestaurantTypeOrmRepository implements RestaurantRepository {
               .orWhere('LOWER(r.address_city) LIKE :like', { like })
               .orWhere('LOWER(r.address_state) LIKE :like', { like })
               .orWhere('LOWER(r.address_country) LIKE :like', { like })
+              .orWhere("LOWER(COALESCE(r.about, '')) LIKE :like", { like })
               .orWhere('LOWER(CAST(r.categories AS CHAR)) LIKE :like', {
                 like,
               });
@@ -98,6 +99,25 @@ export class RestaurantTypeOrmRepository implements RestaurantRepository {
       ...(payload as Omit<Restaurant, 'id'>),
     });
     return this.repo.save(entity);
+  }
+
+  async update(
+    id: string,
+    data: Partial<Omit<Restaurant, 'id'>> & {
+      address?: Partial<Restaurant['address']>;
+    },
+  ): Promise<Restaurant | null> {
+    const existing = await this.repo.findOne({ where: { id } });
+    if (!existing) return null;
+    if (data.name !== undefined) existing.name = data.name;
+    if (data.instagram !== undefined) existing.instagram = data.instagram;
+    if (data.images !== undefined) existing.images = data.images;
+    if (data.categories !== undefined) existing.categories = data.categories;
+    if (data.about !== undefined) existing.about = data.about ?? null;
+    if (data.address !== undefined) {
+      Object.assign(existing.address, data.address);
+    }
+    return this.repo.save(existing);
   }
 
   deleteAll(): Promise<DeleteResult> {

@@ -21,5 +21,11 @@ export interface RestaurantRepository {
   findByCategory(categoryName: string): Promise<Restaurant[]>;
   findCategories(): Promise<CategoryDto[]>;
   create(data: Omit<Restaurant, 'id'> & { id?: string }): Promise<Restaurant>;
+  update(
+    id: string,
+    data: Partial<Omit<Restaurant, 'id'>> & {
+      address?: Partial<Restaurant['address']>;
+    },
+  ): Promise<Restaurant | null>;
   deleteAll(): Promise<DeleteResult>;
 }

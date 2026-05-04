@@ -1,11 +1,13 @@
 import { Global, Logger, Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { FirebaseAuthGuard } from './firebase-auth.guard';
-import { initializeFirebaseAdmin } from './firebase-admin.setup';
+import { FirebaseAuthGuard } from './guards/firebase-auth.guard';
+import { initializeFirebaseAdmin } from './infrastructure/firebase-admin.initializer';
+import { FirebaseTokenVerifier } from './infrastructure/firebase-token-verifier.service';
 
 @Global()
 @Module({
   providers: [
+    FirebaseTokenVerifier,
     {
       provide: APP_GUARD,
       useClass: FirebaseAuthGuard,

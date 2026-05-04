@@ -21,4 +21,7 @@ export class Restaurant {
 
   @Column({ type: 'json', nullable: true })
   images?: string[];
+
+  @Column({ type: 'text', nullable: true })
+  about?: string | null;
 }

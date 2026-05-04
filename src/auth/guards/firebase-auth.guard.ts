@@ -7,14 +7,17 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
-import * as admin from 'firebase-admin';
-import { IS_PUBLIC_KEY } from './public.decorator';
+import { IS_PUBLIC_KEY } from '../constants';
+import { FirebaseTokenVerifier } from '../infrastructure/firebase-token-verifier.service';
 
 @Injectable()
 export class FirebaseAuthGuard implements CanActivate {
   private readonly logger = new Logger(FirebaseAuthGuard.name);
 
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly tokenVerifier: FirebaseTokenVerifier,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
@@ -34,7 +37,7 @@ export class FirebaseAuthGuard implements CanActivate {
     }
 
     try {
-      const decoded = await admin.auth().verifyIdToken(token);
+      const decoded = await this.tokenVerifier.verifyIdToken(token);
       request.firebaseUser = decoded;
       return true;
     } catch (err) {
