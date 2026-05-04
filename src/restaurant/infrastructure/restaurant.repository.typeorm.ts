@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { DeleteResult, Repository } from 'typeorm';
+import { Brackets, DeleteResult, Repository } from 'typeorm';
 import { CategoryDto } from '../../common/dto/category.dto';
 import { Restaurant } from '../domain/restaurant.entity';
-import { RestaurantRepository } from '../domain/restaurant.repository';
+import {
+  RestaurantRepository,
+  RestaurantSearchPage,
+} from '../domain/restaurant.repository';
 
 @Injectable()
 export class RestaurantTypeOrmRepository implements RestaurantRepository {
@@ -15,6 +18,43 @@ export class RestaurantTypeOrmRepository implements RestaurantRepository {
 
   findAll(): Promise<Restaurant[]> {
     return this.repo.find();
+  }
+
+  async searchPaginated(
+    qRaw: string,
+    page: number,
+    limit: number,
+  ): Promise<RestaurantSearchPage> {
+    const term = (qRaw ?? '').trim();
+    const safe = term.replace(/[%_\\]/g, '').slice(0, 200);
+    const buildQb = () => {
+      const qb = this.repo.createQueryBuilder('r');
+      if (safe.length > 0) {
+        const like = `%${safe.toLowerCase()}%`;
+        qb.where(
+          new Brackets((w) => {
+            // Use real DB column names (snake_case). Embedded `address` with prefix `address_`
+            // maps to `address_city`, `address_state`, `address_country`, etc.
+            w.where('LOWER(r.name) LIKE :like', { like })
+              .orWhere('LOWER(r.address_city) LIKE :like', { like })
+              .orWhere('LOWER(r.address_state) LIKE :like', { like })
+              .orWhere('LOWER(r.address_country) LIKE :like', { like })
+              .orWhere('LOWER(CAST(r.categories AS CHAR)) LIKE :like', { like });
+          }),
+        );
+      }
+      return qb;
+    };
+
+    const total = await buildQb().getCount();
+    const items = await buildQb()
+      .orderBy('r.name', 'ASC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const hasMore = page * limit < total;
+    return { items, total, page, limit, hasMore };
   }
 
   findById(id: string): Promise<Restaurant | null> {

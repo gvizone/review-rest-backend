@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { RestaurantService } from './restaurant.service';
 import { Public } from 'src/auth/public.decorator';
@@ -17,6 +17,19 @@ export class RestaurantController {
   @Get('categories')
   findCategories() {
     return this.restaurantService.findCategories();
+  }
+
+  /** Paginated list / text search (must stay above `:id` so `search` is not captured as an id). */
+  @Public()
+  @Get('search')
+  search(
+    @Query('q') q?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const p = parseInt(page ?? '1', 10);
+    const lim = parseInt(limit ?? '10', 10);
+    return this.restaurantService.searchPaginated(q ?? '', p, lim);
   }
 
   @Public()

@@ -17,6 +17,14 @@ export class RestaurantService {
     return this.restaurantRepository.findAll();
   }
 
+  searchPaginated(q: string, page: number, limit: number) {
+    const safePage = Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1;
+    const safeLimit = Number.isFinite(limit)
+      ? Math.min(50, Math.max(1, Math.floor(limit)))
+      : 10;
+    return this.restaurantRepository.searchPaginated(q ?? '', safePage, safeLimit);
+  }
+
   async findById(id: string): Promise<Restaurant> {
     const restaurant = await this.restaurantRepository.findById(id);
     if (!restaurant) {
