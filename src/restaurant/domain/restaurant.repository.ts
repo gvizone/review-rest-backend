@@ -12,10 +12,14 @@ export type RestaurantSearchPage = {
 
 export interface RestaurantRepository {
   findAll(): Promise<Restaurant[]>;
-  searchPaginated(q: string, page: number, limit: number): Promise<RestaurantSearchPage>;
+  searchPaginated(
+    q: string,
+    page: number,
+    limit: number,
+  ): Promise<RestaurantSearchPage>;
   findById(id: string): Promise<Restaurant | null>;
   findByCategory(categoryName: string): Promise<Restaurant[]>;
   findCategories(): Promise<CategoryDto[]>;
-  create(data: Omit<Restaurant, 'id'>): Promise<Restaurant>;
+  create(data: Omit<Restaurant, 'id'> & { id?: string }): Promise<Restaurant>;
   deleteAll(): Promise<DeleteResult>;
 }

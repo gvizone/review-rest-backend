@@ -39,7 +39,9 @@ export class RestaurantTypeOrmRepository implements RestaurantRepository {
               .orWhere('LOWER(r.address_city) LIKE :like', { like })
               .orWhere('LOWER(r.address_state) LIKE :like', { like })
               .orWhere('LOWER(r.address_country) LIKE :like', { like })
-              .orWhere('LOWER(CAST(r.categories AS CHAR)) LIKE :like', { like });
+              .orWhere('LOWER(CAST(r.categories AS CHAR)) LIKE :like', {
+                like,
+              });
           }),
         );
       }
@@ -85,10 +87,15 @@ export class RestaurantTypeOrmRepository implements RestaurantRepository {
     return out;
   }
 
-  create(data: Omit<Restaurant, 'id'>): Promise<Restaurant> {
+  create(data: Omit<Restaurant, 'id'> & { id?: string }): Promise<Restaurant> {
+    const { id: requestedId, ...payload } = data;
+    const id =
+      typeof requestedId === 'string' && requestedId.trim().length > 0
+        ? requestedId.trim()
+        : randomUUID();
     const entity = this.repo.create({
-      id: randomUUID(),
-      ...data,
+      id,
+      ...(payload as Omit<Restaurant, 'id'>),
     });
     return this.repo.save(entity);
   }

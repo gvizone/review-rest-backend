@@ -2,6 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Restaurant } from './domain/restaurant.entity';
 import type { RestaurantRepository } from './domain/restaurant.repository';
 import { RESTAURANT_REPOSITORY } from './domain/restaurant.repository.token';
+import { BulkImportRestaurantsDto } from './dto/bulk-import-restaurants.dto';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { CategoryDto } from 'src/common/dto/category.dto';
 import { DeleteResult } from 'typeorm';
@@ -59,5 +60,22 @@ export class RestaurantService {
       instagram: dto.instagram,
       images: dto.images,
     });
+  }
+
+  async bulkCreate(dto: BulkImportRestaurantsDto): Promise<Restaurant[]> {
+    const created: Restaurant[] = [];
+    for (const item of dto.items) {
+      const { id, ...rest } = item;
+      const row = await this.restaurantRepository.create({
+        ...(id ? { id } : {}),
+        name: rest.name,
+        address: rest.address,
+        categories: rest.categories,
+        instagram: rest.instagram,
+        images: rest.images,
+      });
+      created.push(row);
+    }
+    return created;
   }
 }

@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
+import { BulkImportRestaurantsDto } from './dto/bulk-import-restaurants.dto';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 import { RestaurantService } from './restaurant.service';
 import { Public } from 'src/auth/public.decorator';
@@ -47,6 +57,13 @@ export class RestaurantController {
   @Post()
   create(@Body() dto: CreateRestaurantDto) {
     return this.restaurantService.create(dto);
+  }
+
+  /** Import many restaurants from a JSON dump (`items` may include optional `id` per row). */
+  @Post('bulk')
+  @HttpCode(201)
+  bulkCreate(@Body() dto: BulkImportRestaurantsDto) {
+    return this.restaurantService.bulkCreate(dto);
   }
 
   @Delete()
