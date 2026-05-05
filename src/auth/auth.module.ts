@@ -1,7 +1,8 @@
 import { Global, Logger, Module, OnModuleInit } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { FirebaseAuthGuard } from './guards/firebase-auth.guard';
-import { initializeFirebaseAdmin } from './infrastructure/firebase-admin.initializer';
+import * as admin from 'firebase-admin';
+import { bootstrapFirebaseAdmin } from './infrastructure/firebase-admin.bootstrap';
 import { FirebaseTokenVerifier } from './infrastructure/firebase-token-verifier.service';
 
 @Global()
@@ -17,10 +18,10 @@ import { FirebaseTokenVerifier } from './infrastructure/firebase-token-verifier.
 export class AuthModule implements OnModuleInit {
   private readonly logger = new Logger(AuthModule.name);
 
-  onModuleInit(): void {
-    const app = initializeFirebaseAdmin();
+  async onModuleInit(): Promise<void> {
+    await bootstrapFirebaseAdmin();
     this.logger.log(
-      `Firebase Admin ready (projectId: ${app.options.projectId ?? 'from service account / ADC'})`,
+      `Firebase Admin ready (projectId: ${admin.app().options.projectId ?? 'n/a'})`,
     );
   }
 }

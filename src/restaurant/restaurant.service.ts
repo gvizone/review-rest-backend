@@ -24,7 +24,11 @@ export class RestaurantService {
     const safeLimit = Number.isFinite(limit)
       ? Math.min(50, Math.max(1, Math.floor(limit)))
       : 10;
-    return this.restaurantRepository.searchPaginated(q ?? '', safePage, safeLimit);
+    return this.restaurantRepository.searchPaginated(
+      q ?? '',
+      safePage,
+      safeLimit,
+    );
   }
 
   async findById(id: string): Promise<Restaurant> {
@@ -88,7 +92,8 @@ export class RestaurantService {
     } = {};
     if (dto.name !== undefined) patch.name = dto.name;
     if (dto.address !== undefined) {
-      (patch as { address?: Partial<Restaurant['address']> }).address = dto.address;
+      (patch as { address?: Partial<Restaurant['address']> }).address =
+        dto.address;
     }
     if (dto.categories !== undefined) patch.categories = dto.categories;
     if (dto.instagram !== undefined) patch.instagram = dto.instagram;
