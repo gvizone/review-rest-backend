@@ -197,6 +197,52 @@ jobs:
                 --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
                 --query "StandardErrorContent" \
                 --output text || true
+
+              echo "----- diagnostics: amazon-ssm-agent logs -----"
+              DIAG_CMD_ID=$(aws ssm send-command \
+                --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
+                --document-name "AWS-RunShellScript" \
+                --timeout-seconds 120 \
+                --comment "Diagnostics: amazon-ssm-agent logs" \
+                --parameters 'commands=[
+                  "set -euxo pipefail",
+                  "sudo systemctl status amazon-ssm-agent --no-pager || true",
+                  "sudo journalctl -u amazon-ssm-agent -n 200 --no-pager || true",
+                  "sudo ls -la /var/log/amazon/ssm || true",
+                  "sudo tail -n 200 /var/log/amazon/ssm/amazon-ssm-agent.log || true",
+                  "sudo tail -n 200 /var/log/amazon/ssm/errors.log || true"
+                ]' \
+                --query "Command.CommandId" \
+                --output text || true)
+
+              if [ -n "${DIAG_CMD_ID:-}" ] && [ "$DIAG_CMD_ID" != "None" ]; then
+                for j in $(seq 1 12); do
+                  DIAG_STATUS=$(aws ssm get-command-invocation \
+                    --command-id "$DIAG_CMD_ID" \
+                    --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                    --query "Status" \
+                    --output text 2>/dev/null || echo "Pending")
+
+                  if [ "$DIAG_STATUS" = "Success" ] || [ "$DIAG_STATUS" = "Failed" ]; then
+                    echo "Diagnostics status: $DIAG_STATUS"
+                    echo "----- diagnostics stdout -----"
+                    aws ssm get-command-invocation \
+                      --command-id "$DIAG_CMD_ID" \
+                      --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                      --query "StandardOutputContent" \
+                      --output text || true
+                    echo "----- diagnostics stderr -----"
+                    aws ssm get-command-invocation \
+                      --command-id "$DIAG_CMD_ID" \
+                      --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                      --query "StandardErrorContent" \
+                      --output text || true
+                    break
+                  fi
+
+                  sleep 5
+                done
+              fi
               exit 1
             fi
 
