@@ -39,31 +39,34 @@ jobs:
           REMOTE_SCRIPT=$(cat <<'EOS'
           set -euxo pipefail
 
+          readonly APP_USER="ubuntu"
+          readonly REPO_DIR="/home/ubuntu/review-rest-backend"
+
           echo "=== deploy: start ==="
           date -Is
           whoami
           uname -a
 
           echo "=== deploy: cd repo ==="
-          cd /home/ubuntu/review-rest-backend
-          pwd
+          ls -ld "$REPO_DIR" || true
+          sudo -u "$APP_USER" -H bash -lc "cd '$REPO_DIR' && pwd"
 
           echo "=== deploy: git pull ==="
-          git rev-parse --short HEAD || true
-          git pull origin master
-          git rev-parse --short HEAD
+          sudo -u "$APP_USER" -H bash -lc "cd '$REPO_DIR' && git rev-parse --short HEAD || true"
+          sudo -u "$APP_USER" -H bash -lc "cd '$REPO_DIR' && git pull origin master"
+          sudo -u "$APP_USER" -H bash -lc "cd '$REPO_DIR' && git rev-parse --short HEAD"
 
           echo "=== deploy: docker compose down ==="
-          docker compose down
+          sudo bash -lc "cd '$REPO_DIR' && docker compose down"
 
           echo "=== deploy: docker compose up (build) ==="
-          docker compose up -d --build
+          sudo bash -lc "cd '$REPO_DIR' && docker compose up -d --build"
 
           echo "=== deploy: docker status ==="
-          docker compose ps
+          sudo bash -lc "cd '$REPO_DIR' && docker compose ps"
 
           echo "=== deploy: docker image prune ==="
-          docker image prune -f
+          sudo docker image prune -f
 
           echo "=== deploy: done ==="
           date -Is
