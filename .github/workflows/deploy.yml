@@ -80,6 +80,20 @@ jobs:
           sudo -u "$APP_USER" -H bash -lc "cd '$REPO_DIR' && git pull origin master"
           sudo -u "$APP_USER" -H bash -lc "cd '$REPO_DIR' && git rev-parse --short HEAD"
 
+          echo "=== deploy: disk usage (before) ==="
+          df -h
+          sudo docker system df || true
+
+          echo "=== deploy: docker cleanup (before pull) ==="
+          # Free space to avoid pull/extract failures on small volumes.
+          # Safe for a single-node deploy since we'll immediately pull & recreate.
+          sudo bash -lc "cd '$REPO_DIR' && APP_IMAGE='$APP_IMAGE' docker compose down --remove-orphans" || true
+          sudo docker system prune -af --volumes || true
+
+          echo "=== deploy: disk usage (after cleanup) ==="
+          df -h
+          sudo docker system df || true
+
           echo "=== deploy: docker compose pull (app image) ==="
           sudo bash -lc "cd '$REPO_DIR' && APP_IMAGE='$APP_IMAGE' docker compose pull app"
 
