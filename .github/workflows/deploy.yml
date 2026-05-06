@@ -37,9 +37,10 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
+            --timeout-seconds 300 \
             --parameters 'commands=[
               "cd /home/ubuntu/review-rest-backend",
-              "git pull origin master",
+              "git pull origin main",
               "docker compose down",
               "docker compose up -d --build",
               "docker image prune -f"
@@ -49,14 +50,38 @@ jobs:
 
           echo "Command ID: $COMMAND_ID"
 
-          # Aguarda o comando terminar
-          aws ssm wait command-executed \
-            --command-id "$COMMAND_ID" \
-            --instance-id "${{ secrets.EC2_INSTANCE_ID }}"
+          # Polling manual — aguarda até 10 minutos
+          for i in $(seq 1 40); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+              --query "Status" \
+              --output text 2>/dev/null || echo "Pending")
 
-          # Exibe o output do comando na EC2
-          aws ssm get-command-invocation \
-            --command-id "$COMMAND_ID" \
-            --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
-            --query "StandardOutputContent" \
-            --output text
+            echo "[$i/40] Status: $STATUS"
+
+            if [ "$STATUS" = "Success" ]; then
+              echo "✅ Deploy concluído!"
+              aws ssm get-command-invocation \
+                --command-id "$COMMAND_ID" \
+                --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                --query "StandardOutputContent" \
+                --output text
+              exit 0
+            fi
+
+            if [ "$STATUS" = "Failed" ] || [ "$STATUS" = "TimedOut" ] || [ "$STATUS" = "Cancelled" ]; then
+              echo "❌ Deploy falhou com status: $STATUS"
+              aws ssm get-command-invocation \
+                --command-id "$COMMAND_ID" \
+                --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                --query "StandardErrorContent" \
+                --output text
+              exit 1
+            fi
+
+            sleep 15
+          done
+
+          echo "❌ Timeout: deploy demorou mais de 10 minutos"
+          exit 1
