@@ -5,11 +5,16 @@ import { NestFactory } from '@nestjs/core';
 import { json, urlencoded } from 'express';
 import { env } from './config/env';
 import { AppModule } from './app.module';
+import { AppLogger } from './common/logging/app-logger.service';
+import { NestLoggerAdapter } from './common/logging/nest-logger.adapter';
 
 const jsonBodyLimit = '32mb';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const appLogger = app.get(AppLogger);
+  app.useLogger(new NestLoggerAdapter(appLogger));
+  app.flushLogs();
   app.use(json({ limit: jsonBodyLimit }));
   app.use(urlencoded({ extended: true, limit: jsonBodyLimit }));
   app.enableCors({
