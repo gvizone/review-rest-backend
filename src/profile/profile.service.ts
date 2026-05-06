@@ -39,7 +39,6 @@ export class ProfileService {
       );
     }
     const reviews = await this.reviewService.findByUserId(user.id);
-    user.name = user.name + ' teste';
     return {
       user,
       reviews,
