@@ -84,7 +84,7 @@ jobs:
           sudo bash -lc "cd '$REPO_DIR' && APP_IMAGE='$APP_IMAGE' docker compose pull app"
 
           echo "=== deploy: docker compose up (no build) ==="
-          sudo bash -lc \"cd '$REPO_DIR' && APP_IMAGE='$APP_IMAGE' docker compose up -d --no-build\"
+          sudo bash -lc "cd '$REPO_DIR' && APP_IMAGE='$APP_IMAGE' docker compose up -d --no-build"
 
           echo "=== deploy: docker status ==="
           sudo bash -lc "cd '$REPO_DIR' && APP_IMAGE='$APP_IMAGE' docker compose ps"
@@ -104,7 +104,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --timeout-seconds 1200 \
+            --timeout-seconds 600 \
             --comment "GitHub Actions deploy: $GITHUB_REPOSITORY@$GITHUB_SHA" \
             --parameters "{\"commands\":[\"echo '$REMOTE_SCRIPT_B64' | base64 -d | bash\"]}" \
             --query "Command.CommandId" \
@@ -112,8 +112,11 @@ jobs:
 
           echo "Command ID: $COMMAND_ID"
 
-          # Polling manual — aguarda até 10 minutos
-          for i in $(seq 1 40); do
+          # Polling manual — aguarda até 10 minutos (600s)
+          PREV_STDOUT_HASH=""
+          PREV_STDERR_HASH=""
+
+          for i in $(seq 1 60); do
             read -r STATUS STATUS_DETAILS RESPONSE_CODE < <(
               aws ssm get-command-invocation \
                 --command-id "$COMMAND_ID" \
@@ -122,7 +125,36 @@ jobs:
                 --output text 2>/dev/null || echo "Pending Pending -1"
             )
 
-            echo "[$i/40] Status: $STATUS | Details: $STATUS_DETAILS | ResponseCode: $RESPONSE_CODE"
+            echo "[$i/60] Status: $STATUS | Details: $STATUS_DETAILS | ResponseCode: $RESPONSE_CODE"
+
+            # While running, surface output as it changes.
+            if [ "$STATUS" = "InProgress" ] || [ "$STATUS" = "Pending" ] || [ "$STATUS" = "Delayed" ]; then
+              CUR_STDOUT=$(aws ssm get-command-invocation \
+                --command-id "$COMMAND_ID" \
+                --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                --query "StandardOutputContent" \
+                --output text 2>/dev/null || true)
+              CUR_STDERR=$(aws ssm get-command-invocation \
+                --command-id "$COMMAND_ID" \
+                --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+                --query "StandardErrorContent" \
+                --output text 2>/dev/null || true)
+
+              CUR_STDOUT_HASH=$(printf '%s' "$CUR_STDOUT" | sha256sum | awk '{print $1}')
+              CUR_STDERR_HASH=$(printf '%s' "$CUR_STDERR" | sha256sum | awk '{print $1}')
+
+              if [ "$CUR_STDOUT_HASH" != "$PREV_STDOUT_HASH" ]; then
+                echo "----- stdout update (SSM) -----"
+                printf '%s\n' "$CUR_STDOUT"
+                PREV_STDOUT_HASH="$CUR_STDOUT_HASH"
+              fi
+
+              if [ "$CUR_STDERR_HASH" != "$PREV_STDERR_HASH" ]; then
+                echo "----- stderr update (SSM) -----"
+                printf '%s\n' "$CUR_STDERR"
+                PREV_STDERR_HASH="$CUR_STDERR_HASH"
+              fi
+            fi
 
             if [ "$STATUS" = "Success" ]; then
               echo "SSM reported Success. Fetching full stdout/stderr."
@@ -168,7 +200,7 @@ jobs:
               exit 1
             fi
 
-            sleep 15
+            sleep 10
           done
 
           echo "❌ Timeout: deploy demorou mais de 10 minutos"
