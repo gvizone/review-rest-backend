@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: ${APP_IMAGE:-review-rest-backend:local}
     restart: always
     expose:
       - '3000' # interno apenas
